@@ -1,1 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conversion freebets - par Sebazerty37 pour ASFM</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#111827}
+.container{max-width:1600px;margin:0 auto;padding:20px}h1,h2{margin:0 0 12px}h1{text-align:center;color:#fff;margin-bottom:8px}.subtitle-link{text-align:center;margin:0 0 20px}.subtitle-link a{color:#fff;font-style:italic;font-size:1.25rem;text-decoration:underline;opacity:.95}.subtitle-link a:hover{opacity:1}
+.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 4px 14px rgba(0,0,0,.15);margin-bottom:18px}
+.grid{display:grid;gap:16px}.grid-2{grid-template-columns:1.2fr .8fr}.grid-4{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+input{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:12px;font:inherit}button{border:none;border-radius:10px;padding:11px 14px;font-weight:700;cursor:pointer}.danger{background:#b91c1c;color:#fff}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.stat{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border-radius:10px;padding:14px;text-align:center}.label{font-size:.88em;opacity:.92}.value{font-size:1.55em;font-weight:700;margin-top:4px}
+table{width:100%;border-collapse:collapse}th{background:#f8fafc;color:#374151;padding:10px 8px;border-bottom:2px solid #e5e7eb;font-size:.92em}td{padding:10px 8px;border-bottom:1px solid #e9ecef;text-align:center;font-size:.92em}tr:last-child td{border-bottom:none}.badge-ok{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;border-radius:999px;background:#10b981;color:#fff;font-size:1.1em;font-weight:700}.row-done{background:#ecfdf5}.mise-strong{font-weight:800;color:#16a34a;font-size:150%}.mise-strong::after{content:' Fr'}.checkbox-xl{transform:scale(2);cursor:pointer}.green-text{color:#16a34a !important;-webkit-text-stroke:1px #ffffff;text-shadow:0 0 1px #ffffff,0 0 2px #ffffff}.euro-after::after{content:' €'}
+@media (max-width: 900px){.grid-2{grid-template-columns:1fr} .subtitle-link a{font-size:1rem}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Conversion freebets - par Sebazerty37 pour ASFM</h1>
+<p class="subtitle-link"><a href="https://mowglipronos.com/programme-arrondir-ses-fins-de-mois-asfm/" target="_blank" rel="noopener noreferrer">ASFM pour arrondir ses fins de mois, cliquez ici</a></p>
 
+<div class="grid grid-2">
+  <div class="card">
+    <h2>1. Paramètres</h2>
+    <div class="grid grid-4">
+      <div><label>Montant freebets</label><input id="freebetAmount" type="number" step="0.01" value="120"></div>
+      <div><label>Taux cible</label><input id="targetRate" type="number" step="0.01" value="0.78"></div>
+      <div><label>Bénéfice cible</label><input id="targetProfit" type="number" step="0.01" value="93.60" readonly></div>
+    </div>
+    <h2 style="margin-top:16px">Correspondance des équipes</h2>
+    <div class="grid grid-4">
+      <div><label>Équipe 1</label><input id="team1" type="text" placeholder="ÉQUIPE POUR 1" style="text-transform:uppercase"></div>
+      <div><label>Équipe 2</label><input id="team2" type="text" placeholder="ÉQUIPE POUR 2" style="text-transform:uppercase"></div>
+      <div><label>Équipe A</label><input id="teamA" type="text" placeholder="ÉQUIPE POUR A" style="text-transform:uppercase"></div>
+      <div><label>Équipe B</label><input id="teamB" type="text" placeholder="ÉQUIPE POUR B" style="text-transform:uppercase"></div>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="danger" onclick="resetAll()">Réinitialiser</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3. Synthèse globale</h2>
+    <div class="grid grid-4">
+      <div class="stat"><div class="label">Freebets</div><div class="value" id="s_freebet">120.00</div></div>
+      <div class="stat"><div class="label">Total freebets placés</div><div class="value" id="s_total">0.00</div></div>
+      <div class="stat"><div class="label">Bénéfice final</div><div class="value euro-after" id="s_final">0.00</div></div>
+      <div class="stat"><div class="label">Taux de conversion</div><div class="value" id="s_conversion">0.00%</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>2. Tableau de conversion</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>OK</th>
+        <th>Ligne</th>
+        <th>Match 1</th>
+        <th>Match 2</th>
+        <th>Cote du combiné</th>
+        <th>Mise à placer</th>
+        <th>Validation</th>
+        <th>Bookmaker</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+</div>
+
+<script>
+const STORAGE_KEY='conversion_freebets_v8';
+const MODELE=[
+{m1:'1',m2:'A',cote:'',checked:false,book:''},
+{m1:'1',m2:'N',cote:'',checked:false,book:''},
+{m1:'1',m2:'B',cote:'',checked:false,book:''},
+{m1:'N',m2:'A',cote:'',checked:false,book:''},
+{m1:'N',m2:'N',cote:'',checked:false,book:''},
+{m1:'N',m2:'B',cote:'',checked:false,book:''},
+{m1:'2',m2:'A',cote:'',checked:false,book:''},
+{m1:'2',m2:'N',cote:'',checked:false,book:''},
+{m1:'2',m2:'B',cote:'',checked:false,book:''}
+];
+function euro(v){return Number(v||0).toFixed(2)}
+function forceUpper(el){el.value=el.value.toUpperCase()}
+function targetProfit(){return Number(document.getElementById('freebetAmount').value||0)*Number(document.getElementById('targetRate').value||0)}
+function teamMap(){return {'1':(document.getElementById('team1').value.trim().toUpperCase()||'1'),'2':(document.getElementById('team2').value.trim().toUpperCase()||'2'),'A':(document.getElementById('teamA').value.trim().toUpperCase()||'A'),'B':(document.getElementById('teamB').value.trim().toUpperCase()||'B'),'N':'N'}}
+function displayToken(token){const map=teamMap();return map[token]||token}
+function saveState(){const rows=Array.from(document.querySelectorAll('#tableBody tr')).map(tr=>({m1:tr.dataset.rawm1,m2:tr.dataset.rawm2,cote:tr.querySelector('.cote').value,book:tr.querySelector('.book').value,checked:tr.querySelector('.doneCheck').checked}));localStorage.setItem(STORAGE_KEY,JSON.stringify({freebet:document.getElementById('freebetAmount').value,rate:document.getElementById('targetRate').value,team1:document.getElementById('team1').value,team2:document.getElementById('team2').value,teamA:document.getElementById('teamA').value,teamB:document.getElementById('teamB').value,rows}))}
+function loadState(){try{const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!data)return false;document.getElementById('freebetAmount').value=data.freebet||120;document.getElementById('targetRate').value=data.rate||0.78;document.getElementById('team1').value=(data.team1||'').toUpperCase();document.getElementById('team2').value=(data.team2||'').toUpperCase();document.getElementById('teamA').value=(data.teamA||'').toUpperCase();document.getElementById('teamB').value=(data.teamB||'').toUpperCase();renderRows(data.rows&&data.rows.length?data.rows:MODELE);return true}catch(e){return false}}
+function syncTarget(){const tgt=targetProfit();document.getElementById('targetProfit').value=euro(tgt)}
+function renderRows(rows){const body=document.getElementById('tableBody');body.innerHTML='';rows.forEach((r,idx)=>{body.innerHTML+=`<tr data-rawm1="${r.m1||''}" data-rawm2="${r.m2||''}" class="${r.checked?'row-done':''}"><td><input class="doneCheck checkbox-xl" type="checkbox" ${r.checked?'checked':''} onchange="toggleDone(this)"></td><td>${idx+1}</td><td class="m1label">${displayToken(r.m1||'')}</td><td class="m2label">${displayToken(r.m2||'')}</td><td><input class="cote" type="number" step="0.01" min="0" value="${r.cote||''}" oninput="recalculer()"></td><td class="miseCell mise-strong">0.00</td><td class="validCell">${r.checked?'<span class="badge-ok">✔</span>':''}</td><td><input class="book" value="${r.book||''}" oninput="saveState()"></td></tr>`});updateDisplayedTeams();syncTarget()}
+function updateDisplayedTeams(){document.querySelectorAll('#tableBody tr').forEach(tr=>{tr.querySelector('.m1label').textContent=String(displayToken(tr.dataset.rawm1)).toUpperCase();tr.querySelector('.m2label').textContent=String(displayToken(tr.dataset.rawm2)).toUpperCase()});saveState()}
+function toggleDone(el){const tr=el.closest('tr');const valid=tr.querySelector('.validCell');if(el.checked){tr.classList.add('row-done');valid.innerHTML='<span class="badge-ok">✔</span>'}else{tr.classList.remove('row-done');valid.innerHTML=''}saveState()}
+function recalculer(){syncTarget();const tgt=targetProfit();let total=0;let finalProfit=tgt;Array.from(document.querySelectorAll('#tableBody tr')).forEach(tr=>{const cote=Number(tr.querySelector('.cote').value||0);const mise=cote>1?tgt/(cote-1):0;tr.querySelector('.miseCell').textContent=euro(mise);total+=mise});const conversion=total>0?(finalProfit/total)*100:0;document.getElementById('s_freebet').textContent=euro(document.getElementById('freebetAmount').value);document.getElementById('s_total').textContent=euro(total);document.getElementById('s_final').textContent=euro(finalProfit);const convEl=document.getElementById('s_conversion');convEl.textContent=euro(conversion)+'%';convEl.classList.toggle('green-text',conversion>75);saveState()}
+function resetAll(){localStorage.removeItem(STORAGE_KEY);document.getElementById('freebetAmount').value=120;document.getElementById('targetRate').value=0.78;document.getElementById('team1').value='';document.getElementById('team2').value='';document.getElementById('teamA').value='';document.getElementById('teamB').value='';renderRows(JSON.parse(JSON.stringify(MODELE)));recalculer()}
+document.getElementById('freebetAmount').addEventListener('input',recalculer);document.getElementById('targetRate').addEventListener('input',recalculer);['team1','team2','teamA','teamB'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{forceUpper(e.target);updateDisplayedTeams();recalculer()}));if(!loadState()){renderRows(JSON.parse(JSON.stringify(MODELE)))}recalculer();
+</script>
+</body>
+</html>
